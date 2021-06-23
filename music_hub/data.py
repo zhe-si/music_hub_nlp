@@ -39,7 +39,7 @@ music_tips = "欧美 日语 韩语 华语 粤语 " \
 def main():
     # id，歌名，歌手名，原本歌词，翻译歌词，分类，歌曲链接
     musics_data = {}
-    # musics_data = read_data_from_file("E:/t.txt")
+    # musics_data = read_data_from_file("./data/music_100t.txt")
 
     # 获取各分类下n首歌曲基本信息
     i = 0
@@ -54,14 +54,20 @@ def main():
             break
         print("\rfetch music id: {:.4f}%".format(i / len(music_tips) * 100), end="")
     print()
+
     # 得到音乐的id
     musics_id = [m_i for m_i in musics_data]
+
     # # 获取音乐的url
     add_music_url(musics_data, musics_id)
 
     # 获取歌词
     add_music_lyric(musics_data, musics_id)
-    with open("./data/music_100.txt", "w", encoding="utf8") as f:
+
+    # 获取专辑封面图
+    add_music_pic(musics_data, musics_id)
+
+    with open("./data/music_100t.txt", "w", encoding="utf8") as f:
         f.write(str(musics_data))
 
 
@@ -89,6 +95,23 @@ def add_music_id_name_author(music_tip, musics_data, musics_num):
             i += 1
 
 
+def add_music_pic(musics_data, musics_id):
+    musics_detail = []
+    fin_pos = len(musics_id) // 10 if len(musics_id) % 10 == 0 else len(musics_id) // 10 + 1
+    for i in range(fin_pos):
+        details = request_music_details(musics_id[i * 10: min(i * 10 + 10, len(musics_id))])
+        musics_detail.extend(details)
+        print("\rfetch music details: {:.4f}%".format(i / fin_pos * 100), end="")
+    print()
+    for i in range(len(musics_id)):
+        m_d = musics_detail[i]
+        music_id = musics_id[i]
+        if len(m_d["songs"]) == 0:
+            musics_data[music_id]["pic_url"] = None
+        else:
+            musics_data[music_id]["pic_url"] = m_d["songs"][0]["al"]["picUrl"]
+
+
 def add_music_url(musics_data, musics_id):
     musics_info = []
     fin_pos = len(musics_id) // 10 if len(musics_id) % 10 == 0 else len(musics_id) // 10 + 1
@@ -96,6 +119,7 @@ def add_music_url(musics_data, musics_id):
         infos = request_music_song(musics_id[i * 10: min(i * 10 + 10, len(musics_id))])
         musics_info.extend(infos)
         print("\rfetch music url: {:.4f}%".format(i / fin_pos * 100), end="")
+    print()
     for m_i in musics_info:
         music_id = m_i["data"][0]["id"]
         musics_data[music_id]["url"] = m_i["data"][0]["url"]
@@ -107,6 +131,7 @@ def add_music_lyric(musics_data, musics_id):
     for i in range(fin_pos):
         musics_lyric.extend(request_music_lyric(musics_id[i * 10: min(i * 10 + 10, len(musics_id))]))
         print("\rfetch music lyric: {:.4f}%".format(i / fin_pos * 100), end="")
+    print()
     for i in range(len(musics_id)):
         music_id = musics_id[i]
         music_lyric_data = musics_lyric[i]

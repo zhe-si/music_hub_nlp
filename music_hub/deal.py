@@ -62,15 +62,25 @@ def get_key_words(text: str, n):
     return k_words
 
 
-def get_music_text_key_words(music_text: str, author_name: str):
-    pass
+def get_music_text_key_words(music_data: dict, n):
+    music_text = get_music_text(music_data)
+    author_name = music_data["author_name"]
+    music_tip = music_data["欧美"]
+
+    key_words = get_key_words(music_text, n - 2)
+    key_words.append(author_name)
+    key_words.append(music_tip)
+
+    return key_words
 
 
 def main():
     musics_data = read_data_from_file("data/temp/tt.txt")
-    text = musics_data[list(musics_data.keys())[0]]
-    d = get_key_words(text, 20)
-    print(d)
+
+    music_id = list(musics_data.keys())[0]
+    music_data = musics_data[music_id]
+    music_key_words = get_music_text_key_words(music_data, 20)
+    print(music_key_words)
 
 
 if __name__ == '__main__':
