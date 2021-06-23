@@ -1,8 +1,11 @@
+import ast
 import asyncio
 import json
-import time
-import ast
+import os
+import re
+import string
 
+import aiofiles
 import aiohttp
 import requests
 
@@ -10,8 +13,8 @@ my_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36 Edg/91.0.864.54'}
 
 
-async def fetch(client, url):
-    while True:
+async def fetch(client, url, try_time=5):
+    for i in range(try_time):
         try:
             async with client.get(url, params=my_headers) as resp:
                 assert resp.status == 200
@@ -20,13 +23,44 @@ async def fetch(client, url):
             print(e)
 
 
-async def run(urls: list):
+async def run_fetch(urls: list):
     async with aiohttp.ClientSession() as client:
         tasks = []
         for url in urls:
             tasks.append(asyncio.create_task(fetch(client, url)))
         await asyncio.wait(tasks)
         return [t.result() for t in tasks]
+
+
+async def download_and_save(client, url, save_file_path, try_time=5):
+    for i in range(try_time):
+        try:
+            async with client.get(url, params=my_headers) as resp:
+                assert resp.status == 200
+                file = await resp.read()
+                if cant_find(file.decode("utf8"), "460", "html"):
+                    async with aiofiles.open(save_file_path, "wb") as f:
+                        await f.write(file)
+                    return
+        except BaseException as e:
+            print("exception: > {}".format(e))
+
+
+async def run_download(urls: list, save_path: str, files_name=None):
+    files_path = []
+    async with aiohttp.ClientSession() as client:
+        tasks = []
+        for i in range(len(urls)):
+            url = urls[i]
+            if files_name is None:
+                file_name = re.split("[/=]", url)[-1]
+            else:
+                file_name = files_name[i]
+            file_path = os.path.join(save_path, file_name)
+            files_path.append(file_path)
+            tasks.append(asyncio.create_task(download_and_save(client, url, file_path)))
+        await asyncio.wait(tasks)
+    return files_path
 
 
 music_tips = "欧美 日语 韩语 华语 粤语 " \
@@ -38,37 +72,51 @@ music_tips = "欧美 日语 韩语 华语 粤语 " \
 
 def main():
     # id，歌名，歌手名，原本歌词，翻译歌词，分类，歌曲链接
-    musics_data = {}
-    # musics_data = read_data_from_file("./data/music_100t.txt")
+    # musics_data = {}
+    musics_data = read_data_from_file("data/temp/music_100t.txt")
 
-    # 获取各分类下n首歌曲基本信息
-    i = 0
-    while True:
-        try:
-            add_music_id_name_author(music_tips[i], musics_data, 100)
-            i += 1
-        except BaseException as e:
-            print("\nexception > " + str(e) + " " + str(e.args))
-            time.sleep(0.5)
-        if i >= len(music_tips):
-            break
-        print("\rfetch music id: {:.4f}%".format(i / len(music_tips) * 100), end="")
-    print()
+    # 获取各分类下n首歌曲基本信息（放到musics_data中）
+    # i = 0
+    # while True:
+    #     try:
+    #         add_music_id_name_author(music_tips[i], musics_data, 100)
+    #         i += 1
+    #     except BaseException as e:
+    #         print("\nexception > " + str(e) + " " + str(e.args))
+    #         time.sleep(0.5)
+    #     if i >= len(music_tips):
+    #         break
+    #     print("\rfetch music id: {:.4f}%".format(i / len(music_tips) * 100), end="")
+    # print()
 
     # 得到音乐的id
     musics_id = [m_i for m_i in musics_data]
 
-    # # 获取音乐的url
-    add_music_url(musics_data, musics_id)
+    # 下载图片、mp3等
+    tar_data = "url"
+    fin_pos = len(musics_id) // 10 if len(musics_id) % 10 == 0 else len(musics_id) // 10 + 1
+    for i in range(fin_pos):
+        # print(download_urls([musics_data[i][tar_data] for i in musics_id[i * 10: min(i * 10 + 10, len(musics_id))] if
+        #                      musics_data[i][tar_data] is not None], "E:/1"))
+        save_path = r"F:\My_Resources\datasets\music"
+        id_range = musics_id[i * 10: min(i * 10 + 10, len(musics_id))]
+        id_range = [m_i for m_i in id_range if not os.path.exists(os.path.join(save_path, "{}.mp3".format(m_i)))]
+        print(download_urls([music163_song_api.format(i) for i in id_range],
+                            save_path,
+                            ["{}.mp3".format(m_i) for m_i in id_range]))
+        print("download {:.4f}%".format(i / fin_pos * 100))
 
-    # 获取歌词
-    add_music_lyric(musics_data, musics_id)
+    # 获取音乐的url（放到musics_data中）
+    # add_music_url(musics_data, musics_id)
 
-    # 获取专辑封面图
-    add_music_pic(musics_data, musics_id)
+    # 获取歌词（放到musics_data中）
+    # add_music_lyric(musics_data, musics_id)
 
-    with open("data/music_100t.txt", "w", encoding="utf8") as f:
-        f.write(str(musics_data))
+    # 获取专辑封面图（放到musics_data中）
+    # add_music_pic(musics_data, musics_id)
+
+    # with open("data/music_100t.txt", "w", encoding="utf8") as f:
+    #     f.write(str(musics_data))
 
 
 def read_data_from_file(f_path: str):
@@ -147,6 +195,7 @@ def add_music_lyric(musics_data, musics_id):
 
 
 music163_api = "https://api.imjad.cn/cloudmusic/?type={}&id={}"
+music163_song_api = "http://music.163.com/song/media/outer/url?id={}.mp3"
 api_types = ["song", "lyric", "detail", "playlist", "comments"]
 
 
@@ -187,12 +236,55 @@ def request_music_data(music_ids, request_type):
 
 def fetch_urls(urls):
     loop = asyncio.get_event_loop()
-    responds = loop.run_until_complete(run(urls))
+    responds = loop.run_until_complete(run_fetch(urls))
     for r_id in range(len(urls)):
         r = responds[r_id]
         if r.find("460") != -1:
             responds[r_id] = requests.get(urls[r_id], headers=my_headers).text
     return responds
+
+
+def cant_find(sentence, *words):
+    for word in words:
+        if sentence.find(word) != -1:
+            return False
+    return True
+
+
+def is_text(r_b: bytes):
+    try:
+        r_t = r_b[:60].decode("utf8")
+    except Exception as e:
+        return False
+
+    num = 0
+    for c in r_t:
+        if '\u4e00' <= c <= '\u9fa5' or c in string.printable:
+            num += 1
+        if num > 42:
+            return True
+    return False
+
+
+def download_urls(urls, save_path, files_name=None):
+    if files_name is not None and len(urls) > len(files_name):
+        files_name = None
+
+    loop = asyncio.get_event_loop()
+    files_path = loop.run_until_complete(run_download(urls, save_path, files_name))
+    for r_id in range(len(urls)):
+        file_p = files_path[r_id]
+        if os.path.isdir(file_p):
+            files_path[r_id] = None
+        elif not os.path.exists(file_p):
+            r = requests.get(urls[r_id], headers=my_headers)
+            r_b = r.content
+            if not is_text(r_b):
+                with open(file_p, "wb") as f:
+                    f.write(r_b)
+            else:
+                files_path[r_id] = None
+    return files_path
 
 
 if __name__ == '__main__':
