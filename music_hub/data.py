@@ -67,7 +67,7 @@ def main():
     # 获取专辑封面图
     add_music_pic(musics_data, musics_id)
 
-    with open("data/temp/music_100t.txt", "w", encoding="utf8") as f:
+    with open("data/music_100t.txt", "w", encoding="utf8") as f:
         f.write(str(musics_data))
 
 
