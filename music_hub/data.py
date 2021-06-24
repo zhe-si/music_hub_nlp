@@ -38,7 +38,7 @@ async def download_and_save(client, url, save_file_path, try_time=5):
             async with client.get(url, params=my_headers) as resp:
                 assert resp.status == 200
                 file = await resp.read()
-                if cant_find(file.decode("utf8"), "460", "html"):
+                if is_pic(file) or is_mp3(file):
                     async with aiofiles.open(save_file_path, "wb") as f:
                         await f.write(file)
                     return
@@ -73,7 +73,7 @@ music_tips = "欧美 日语 韩语 华语 粤语 " \
 def main():
     # id，歌名，歌手名，原本歌词，翻译歌词，分类，歌曲链接
     # musics_data = {}
-    musics_data = read_data_from_file("data/temp/music_100t.txt")
+    musics_data = read_data_from_file("data/music_100.txt")
 
     # 获取各分类下n首歌曲基本信息（放到musics_data中）
     # i = 0
@@ -93,18 +93,18 @@ def main():
     musics_id = [m_i for m_i in musics_data]
 
     # 下载图片、mp3等
-    tar_data = "url"
+    tar_data = "pic_url"
     fin_pos = len(musics_id) // 10 if len(musics_id) % 10 == 0 else len(musics_id) // 10 + 1
     for i in range(fin_pos):
-        # print(download_urls([musics_data[i][tar_data] for i in musics_id[i * 10: min(i * 10 + 10, len(musics_id))] if
-        #                      musics_data[i][tar_data] is not None], "E:/1"))
-        save_path = r"F:\My_Resources\datasets\music"
-        id_range = musics_id[i * 10: min(i * 10 + 10, len(musics_id))]
-        id_range = [m_i for m_i in id_range if not os.path.exists(os.path.join(save_path, "{}.mp3".format(m_i)))]
-        print(download_urls([music163_song_api.format(i) for i in id_range],
-                            save_path,
-                            ["{}.mp3".format(m_i) for m_i in id_range]))
-        print("download {:.4f}%".format(i / fin_pos * 100))
+        print(download_urls([musics_data[i][tar_data] for i in musics_id[i * 10: min(i * 10 + 10, len(musics_id))] if
+                             musics_data[i][tar_data] is not None], "E:/1"))
+        # save_path = r"F:\My_Resources\datasets\music"
+        # id_range = musics_id[i * 10: min(i * 10 + 10, len(musics_id))]
+        # id_range = [m_i for m_i in id_range if not os.path.exists(os.path.join(save_path, "{}.mp3".format(m_i)))]
+        # print(download_urls([music163_song_api.format(i) for i in id_range],
+        #                     save_path,
+        #                     ["{}.mp3".format(m_i) for m_i in id_range]))
+        # print("download {:.4f}%".format(i / fin_pos * 100))
 
     # 获取音乐的url（放到musics_data中）
     # add_music_url(musics_data, musics_id)
@@ -251,6 +251,49 @@ def cant_find(sentence, *words):
     return True
 
 
+def is_mp3(bytes_data: bytes):
+    if bytes_data[:3] == b"ID3" or bytes_data[-32:-35] == b"TAG":
+        return True
+    return False
+
+
+def is_pic(bytes_data: bytes):
+    if check_pic_type(bytes_data) is None:
+        return False
+    return True
+
+
+def check_pic_type(bytes_data: bytes):
+    if bytes_data[6:10] in (b'JFIF', b'Exif'):
+        return 'jpeg'
+    elif bytes_data.startswith(b'\211PNG\r\n\032\n'):
+        return 'png'
+    elif bytes_data[:6] in (b'GIF87a', b'GIF89a'):
+        return 'gif'
+    elif bytes_data[:2] in (b'MM', b'II'):
+        return 'tiff'
+    elif bytes_data.startswith(b'\001\332'):
+        return 'rgb'
+    elif len(bytes_data) >= 3 and bytes_data[0] == ord(b'P') and bytes_data[1] in b'14' and bytes_data[2] in b' \t\n\r':
+        return 'pbm'
+    elif len(bytes_data) >= 3 and bytes_data[0] == ord(b'P') and bytes_data[1] in b'25' and bytes_data[2] in b' \t\n\r':
+        return 'pgm'
+    elif len(bytes_data) >= 3 and bytes_data[0] == ord(b'P') and bytes_data[1] in b'36' and bytes_data[2] in b' \t\n\r':
+        return 'ppm'
+    elif bytes_data.startswith(b'\x59\xA6\x6A\x95'):
+        return 'rast'
+    elif bytes_data.startswith(b'#define '):
+        return 'xbm'
+    elif bytes_data.startswith(b'BM'):
+        return 'bmp'
+    elif bytes_data.startswith(b'RIFF') and bytes_data[8:12] == b'WEBP':
+        return 'webp'
+    elif bytes_data.startswith(b'\x76\x2f\x31\x01'):
+        return 'exr'
+    else:
+        return None
+
+
 def is_text(r_b: bytes):
     try:
         r_t = r_b[:60].decode("utf8")
@@ -279,7 +322,7 @@ def download_urls(urls, save_path, files_name=None):
         elif not os.path.exists(file_p):
             r = requests.get(urls[r_id], headers=my_headers)
             r_b = r.content
-            if not is_text(r_b):
+            if is_pic(r_b) or is_mp3(r_b):
                 with open(file_p, "wb") as f:
                     f.write(r_b)
             else:
