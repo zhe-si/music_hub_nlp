@@ -6,7 +6,7 @@ import sys
 
 import requests
 
-sys.path.append("../")
+sys.path.append("/")
 from whoosh.index import create_in
 from whoosh.fields import *
 from whoosh.qparser import QueryParser

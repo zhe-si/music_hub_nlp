@@ -6,8 +6,8 @@ import jieba
 import jieba.analyse
 from gensim.models import word2vec, KeyedVectors
 
-from music_hub.data import read_data_from_file
-from music_hub.tools import NItem, get_not_none, make_sure_exist
+from data import read_data_from_file
+from tools import NItem, get_not_none, make_sure_exist
 
 
 def get_lrc_zh(music_data: dict):
@@ -82,15 +82,15 @@ def cut_musics_all_text_save(musics_data: dict, save_path):
 
 
 def load_model(musics_data):
-    make_sure_exist("./model")
-    make_sure_exist("./data/musics_text")
+    make_sure_exist("model")
+    make_sure_exist("data/musics_text")
 
-    model_path = "./model/music_text_word2vec.model"
+    model_path = "model/music_text_word2vec.model"
     if os.path.exists(model_path):
         model = word2vec.Word2Vec.load(model_path)
         return model.wv
     else:
-        m_t_path = "./data/musics_text/musics_text.txt"
+        m_t_path = "data/musics_text/musics_text.txt"
         if not os.path.exists(m_t_path):
             cut_musics_all_text_save(musics_data, m_t_path)
 

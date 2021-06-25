@@ -8,7 +8,7 @@ app = Sanic("test_server")
 
 @app.get("/")
 async def main_page(request: Request):
-    return await file("./html/welcome.html")
+    return await file("html/welcome.html")
 
 
 @app.post("/api/recommend_musics_by_musics")
