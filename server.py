@@ -1,3 +1,5 @@
+import multiprocessing
+
 from sanic import Sanic, Request
 from sanic.response import file, text, json
 
@@ -69,7 +71,8 @@ async def search_songs_by_words_service(request: Request):
 
 
 def main():
-    app.run(host="0.0.0.0", port=13889)
+    workers = multiprocessing.cpu_count()
+    app.run(host="0.0.0.0", port=13889, access_log=False, workers=workers, debug=False)
 
 
 if __name__ == '__main__':
