@@ -1,7 +1,7 @@
 from sanic import Sanic, Request
 from sanic.response import file, text, json
 
-import deal
+import nlp
 
 app = Sanic("test_server")
 
@@ -24,9 +24,9 @@ async def recommend_musics_by_musics_service(request: Request):
         return text("request arguments error", status=400)
     if "max_n" in request.json:
         max_n = request.json["max_n"]
-        result = deal.recommend_musics_by_musics(musics_id, max_n)
+        result = nlp.recommend_musics_by_musics(musics_id, max_n)
     else:
-        result = deal.recommend_musics_by_musics(musics_id)
+        result = nlp.recommend_musics_by_musics(musics_id)
     return json({"result": result})
 
 
@@ -43,9 +43,9 @@ async def make_song_list_by_words_service(request: Request):
         return text("request arguments error", status=400)
     if "max_n" in request.json:
         max_n = request.json["max_n"]
-        result = deal.make_song_list_by_words(words, max_n)
+        result = nlp.make_song_list_by_words(words, max_n)
     else:
-        result = deal.make_song_list_by_words(words)
+        result = nlp.make_song_list_by_words(words)
     return json({"result": result})
 
 
@@ -62,9 +62,9 @@ async def search_songs_by_words_service(request: Request):
         return text("request arguments error", status=400)
     if "max_n" in request.json:
         max_n = request.json["max_n"]
-        result = deal.search_songs_by_words(words, max_n)
+        result = nlp.search_songs_by_words(words, max_n)
     else:
-        result = deal.search_songs_by_words(words)
+        result = nlp.search_songs_by_words(words)
     return json({"result": result})
 
 
