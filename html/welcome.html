@@ -4,10 +4,59 @@
     <meta charset="UTF-8">
     <title>欢迎</title>
     <style>
-        body{text-align:center}
+        .title{text-align:center}
     </style>
 </head>
 <body>
-<h1>欢迎使用Music_hub NLP服务</h1>
+
+<h1 class="title">欢迎使用Music_hub NLP服务</h1>
+<div class="title">提供歌曲的nlp分析</div>
+<br/>
+
+<ol>
+    <li>
+        /api/recommend_musics_by_musics
+        <ul>
+            <li>
+                描述：根据歌曲推荐api
+            </li>
+            <li>
+                参数：http请求, post方法, 方法体为json, 必选参数: "musics_id"歌曲id列表, 可选参数: "max_n"最大推荐数
+            </li>
+            <li>
+                返回：json: "result" -> 推荐歌曲id列表
+            </li>
+        </ul>
+    </li>
+    <li>
+        /api/make_song_list_by_words
+        <ul>
+            <li>
+                描述：根据关键词生成歌单api
+            </li>
+            <li>
+                参数：http请求, post方法, 方法体为json, 必选参数: "words"描述词列表, 可选参数: "max_n"最大推荐数
+            </li>
+            <li>
+                返回：json: "result"歌单结构(歌单名，歌单描述，歌曲id列表)
+            </li>
+        </ul>
+    </li>
+    <li>
+        /api/search_songs_by_words
+        <ul>
+            <li>
+                描述：根据关键词搜索歌曲api
+            </li>
+            <li>
+                参数：http请求, post方法, 方法体为json, 必选参数: "words"描述词列表, 可选参数: "max_n"最大推荐数
+            </li>
+            <li>
+                返回：json: "result"歌曲id列表
+            </li>
+        </ul>
+    </li>
+</ol>
+
 </body>
 </html>
