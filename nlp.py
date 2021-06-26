@@ -10,6 +10,9 @@ from data import read_data_from_file
 from tools import NItem, get_not_none, make_sure_exist
 
 
+"""处理音乐信息"""
+
+
 def get_lrc_zh(music_data: dict):
     r = re.compile("\[.*?\]")
     if music_data["tlrc"] is not None:
@@ -34,6 +37,7 @@ def get_music_all_text(music_data: dict):
                       get_lrc_zh(music_data)])
 
 
+"""计算文本关键词"""
 cal_key_words_tfidf = jieba.analyse.extract_tags
 cal_key_words_textrank = jieba.analyse.textrank
 
@@ -43,6 +47,7 @@ def get_key_words(text: str, n, cal_key_words=cal_key_words_tfidf):
     return k_words
 
 
+"""计算相似歌曲"""
 RANDOM_EXPAND = 3
 
 
@@ -64,6 +69,20 @@ def cal_random_similar_musics_by_words(model: KeyedVectors, words: list, musics_
     similar_musics = cal_similar_musics_by_words(model, words, musics_data, n * RANDOM_EXPAND + len(exclude_list))
     similar_musics = [m for m in similar_musics if m[0] not in exclude_list]
     return random.sample(similar_musics, min(n, len(similar_musics)))
+
+
+"""计算歌单标题"""
+
+
+def cal_songs_list_name_sample(songs_id: list, musics_data: dict):
+    """随机在歌曲关键词中选取较长的单词作为歌单题目"""
+    longest_words = NItem(6, key=lambda x: len(x))
+    for i in songs_id:
+        longest_words.add_items(musics_data[i]["key_words"])
+    return random.choice(longest_words.get_list())
+
+
+"""初始化与预处理"""
 
 
 def add_jieba_lexicon(musics_data):
@@ -141,6 +160,8 @@ print("model load successful")
 load_musics_key_words(musics_data)
 print("musics' key words load successful")
 
+
+"""API"""
 DEFAULT_MAX_NUM = 15
 
 
@@ -170,7 +191,8 @@ def make_song_list_by_words(words: list, n=DEFAULT_MAX_NUM) -> tuple[str, str, l
     :return: 歌单结构（歌单名，歌单描述，歌单id列表）
     """
     musics_id = [i[0] for i in cal_random_similar_musics_by_words(model, words, musics_data, n)]
-    return "", "", musics_id
+    songs_list_name = cal_songs_list_name_sample(musics_id, musics_data)
+    return songs_list_name, "", musics_id
 
 
 # api

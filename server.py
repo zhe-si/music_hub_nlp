@@ -5,7 +5,7 @@ from sanic.response import file, text, json
 
 import nlp
 
-app = Sanic("test_server")
+app = Sanic("music_hub_nlp_server")
 
 
 @app.get("/")
@@ -72,7 +72,7 @@ async def search_songs_by_words_service(request: Request):
 
 def main():
     workers = multiprocessing.cpu_count()
-    app.run(host="0.0.0.0", port=13889, access_log=False, workers=workers, debug=False)
+    app.run(host="0.0.0.0", port=13889, access_log=False, workers=workers, debug=True)
 
 
 if __name__ == '__main__':

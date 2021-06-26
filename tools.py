@@ -22,6 +22,10 @@ class NItem:
         while len(self._n_list) > self._n:
             self._n_list.pop(0)
 
+    def add_items(self, items):
+        for item in items:
+            self.add_item(item)
+
     def get_list(self):
         return self._n_list.copy()
 
