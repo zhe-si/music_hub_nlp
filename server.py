@@ -72,7 +72,7 @@ async def search_songs_by_words_service(request: Request):
 
 def main():
     workers = multiprocessing.cpu_count()
-    app.run(host="0.0.0.0", port=13889, access_log=False, workers=workers, debug=True)
+    app.run(host="0.0.0.0", port=13889, access_log=True, workers=workers, debug=False)
 
 
 if __name__ == '__main__':
