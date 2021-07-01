@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import json
 import os
 import sys
 
@@ -108,19 +107,18 @@ def test_search():
 
 
 def main():
-    # host = "182.92.163.69"
-    host = "localhost"
+    host = "182.92.163.69"
+    # host = "localhost"
     post = 13889
     url = "http://{}:{}/api/recommend_musics_by_musics".format(host, post)
     url1 = "http://{}:{}/api/make_song_list_by_words".format(host, post)
     url2 = "http://{}:{}/api/search_songs_by_words".format(host, post)
     r = requests.post(url, json={"musics_id": [31010566]})
-    print(r.text)
+    print(r.json())
     r = requests.post(url1, json={"words": ["欧美", "势不可挡"]})
-    print(r.text)
-    print(json.loads(r.text)["result"])
+    print(r.json())
     r = requests.post(url2, json={"words": ["欧美", "势不可挡"]})
-    print(r.text)
+    print(r.json())
     pass
 
 

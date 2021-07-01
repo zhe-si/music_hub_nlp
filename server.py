@@ -1,11 +1,13 @@
 import multiprocessing
 
 from sanic import Sanic, Request
-from sanic.response import file, text, json
+from sanic.response import file, json
 
 import nlp
 
 app = Sanic("music_hub_nlp_server")
+
+header = {"Access-Control-Allow-Origin": "*"}
 
 
 @app.get("/")
@@ -23,13 +25,17 @@ async def recommend_musics_by_musics_service(request: Request):
     if "musics_id" in request.json:
         musics_id = request.json["musics_id"]
     else:
-        return text("request arguments error", status=400)
-    if "max_n" in request.json:
-        max_n = request.json["max_n"]
-        result = nlp.recommend_musics_by_musics(musics_id, max_n)
-    else:
-        result = nlp.recommend_musics_by_musics(musics_id)
-    return json({"result": result})
+        return json({"error": "request arguments error"}, status=400, headers=header)
+    try:
+        if "max_n" in request.json:
+            max_n = request.json["max_n"]
+            result = nlp.recommend_musics_by_musics(musics_id, max_n)
+        else:
+            result = nlp.recommend_musics_by_musics(musics_id)
+    except Exception as e:
+        return json({"error": "request arguments error"}, status=400, headers=header)
+
+    return json({"result": result}, headers=header)
 
 
 @app.post("/api/make_song_list_by_words")
@@ -42,13 +48,17 @@ async def make_song_list_by_words_service(request: Request):
     if "words" in request.json:
         words = request.json["words"]
     else:
-        return text("request arguments error", status=400)
-    if "max_n" in request.json:
-        max_n = request.json["max_n"]
-        result = nlp.make_song_list_by_words(words, max_n)
-    else:
-        result = nlp.make_song_list_by_words(words)
-    return json({"result": result})
+        return json({"error": "request arguments error"}, status=400, headers=header)
+    try:
+        if "max_n" in request.json:
+            max_n = request.json["max_n"]
+            result = nlp.make_song_list_by_words(words, max_n)
+        else:
+            result = nlp.make_song_list_by_words(words)
+    except Exception as e:
+        return json({"error": "request arguments error"}, status=400, headers=header)
+
+    return json({"result": result}, headers=header)
 
 
 @app.post("/api/search_songs_by_words")
@@ -61,13 +71,17 @@ async def search_songs_by_words_service(request: Request):
     if "words" in request.json:
         words = request.json["words"]
     else:
-        return text("request arguments error", status=400)
-    if "max_n" in request.json:
-        max_n = request.json["max_n"]
-        result = nlp.search_songs_by_words(words, max_n)
-    else:
-        result = nlp.search_songs_by_words(words)
-    return json({"result": result})
+        return json({"error": "request arguments error"}, status=400, headers=header)
+    try:
+        if "max_n" in request.json:
+            max_n = request.json["max_n"]
+            result = nlp.search_songs_by_words(words, max_n)
+        else:
+            result = nlp.search_songs_by_words(words)
+    except Exception as e:
+        return json({"error": "request arguments error"}, status=400, headers=header)
+
+    return json({"result": result}, headers=header)
 
 
 def main():

@@ -73,7 +73,7 @@ music_tips = "欧美 日语 韩语 华语 粤语 " \
 def main():
     # id，歌名，歌手名，原本歌词，翻译歌词，分类，歌曲链接
     # musics_data = {}
-    musics_data = read_data_from_file("data/music_100.txt")
+    musics_data = read_data_from_file("data/temp/music_100.txt")
 
     # 获取各分类下n首歌曲基本信息（放到musics_data中）
     # i = 0
