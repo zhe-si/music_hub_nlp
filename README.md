@@ -3,6 +3,7 @@
 - 提供搜索、歌单生成、歌曲推荐等api
 - 是一个http协议的web程序
 - 部署链接(有效期至2021.8.22)：http://182.92.163.69:13889/
+- 本项目为大学实验课项目music_hub（ [前端](https://github.com/Software-defined-future/music_hub_vue_developer), [后端](https://github.com/Software-defined-future/music_hub_server_developer) ）提供服务
 
 ## API
 1. /api/recommend_musics_by_musics  
